@@ -25,6 +25,7 @@ public class EmployeeController {
             String message=errors.getFieldError().getDefaultMessage();
             return ResponseEntity.status(400).body(new ApiResponse(message));
         }
+        employees.add(employee);
         return ResponseEntity.status(200).body(new ApiResponse("Employee added successfully"));
     }
     @PutMapping("/update/{index}")
@@ -47,15 +48,21 @@ public class EmployeeController {
         return ResponseEntity.status(200).body(new ApiResponse("Employee deleted"));
     }
     @GetMapping("/search/{position}")
-    public ResponseEntity searcEmployee(@PathVariable String position){
-
+    public ResponseEntity searchEmployee(@PathVariable String position){
+        ArrayList<Employee> result=new ArrayList<>();
         for(Employee employee:employees ){
             if(employee.getPosition().equals(position)){
-                return ResponseEntity.status(200).body(employee);
+                result.add(employee);
             }
         }
+        if(result.isEmpty()) {
+            return ResponseEntity.status(400).body(new ApiResponse("Not found"));
 
-        return ResponseEntity.status(400).body(new ApiResponse("Not found"));
+        }
+
+        return ResponseEntity.status(200).body(result);
+
+
     }
     @GetMapping("/get/{age}")
 
@@ -76,6 +83,7 @@ public class EmployeeController {
         for (Employee employee : employees) {
             if (employee.getId().equals(id)) {
                 if (employee.getAnnualLeave() >= days) {
+                    employee.setOnLeave(true);
                     employee.setAnnualLeave(employee.getAnnualLeave() - days);
                     return ResponseEntity.status(200).body(new ApiResponse("Leave applied successfully. Remaining annual leave: " + employee.getAnnualLeave()));
 
@@ -92,6 +100,9 @@ public class EmployeeController {
             if (employee.getAnnualLeave() == 0) {
                 noLeaveEmployees.add(employee);
             }
+        }
+        if(noLeaveEmployees.isEmpty()){
+            return ResponseEntity.status(400).body(new ApiResponse("not found"));
         }
         return ResponseEntity.status(200).body(noLeaveEmployees);
 
